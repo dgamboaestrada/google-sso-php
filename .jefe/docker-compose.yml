@@ -1,0 +1,54 @@
+version: '2'
+services:
+  google-sso-php_nginx:
+    image: 'jefecito/nginx:php-fpm'
+    container_name: '${PROJECT_NAME}_nginx'
+    networks:
+      - jefe-cli
+    environment:
+      VIRTUAL_HOST: '${VHOST}'
+      ROOT: '${DOCUMENT_ROOT}'
+      UPSTREAM: 'google-sso-php_php'
+    volumes:
+      - '${PROJECT_ROOT}:/var/www/html'
+    depends_on:
+      - google-sso-php_php
+  google-sso-php_php:
+    image: 'jefecito/php:7.0-fpm'
+    hostname: '${PROJECT_NAME}_php'
+    container_name: '${PROJECT_NAME}_php'
+    networks:
+      - jefe-cli
+    environment:
+      DB_HOST: 'google-sso-php_mysql'
+      DB_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+      DB_NAME: '${DB_NAME}'
+      DB_USER: '${DB_USER}'
+      DB_PASSWORD: '${DB_PASSWORD}'
+      ENVIRONMENT: '${ENVIRONMENT}'
+    expose:
+      - 9000
+    volumes:
+      - '${PROJECT_ROOT}:/var/www/html'
+    depends_on:
+      - google-sso-php_mysql
+  google-sso-php_mysql:
+    image: 'mysql:latest'
+    hostname: '${PROJECT_NAME}_db'
+    container_name: '${PROJECT_NAME}_mysql'
+    networks:
+      - jefe-cli
+    volumes:
+      - 'db_data:/var/lib/mysql'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${DB_NAME}'
+      MYSQL_USER: '${DB_USER}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+volumes:
+  db_data: null
+networks:
+  jefe-cli:
+    external:
+      name: jefe-cli
+
